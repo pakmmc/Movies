@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request, render_template, redirect
 app = Flask(__name__)
 
 # Register the setup page and import create_connection()
@@ -12,6 +12,25 @@ def home():
 
 
 # TODO: Add a '/register' (add_user) route that uses INSERT
+@app.route('/register', methods=['GET', 'POST'])
+def add_user():
+    if request.method == 'POST':
+        with create_connection() as connection:
+            with connection.cursor() as cursor:
+                sql = """INSERT INTO users
+                    (first_name, last_name, email, password)
+                    VALUES (%s, %s, %s, %s)
+                """
+                values = (
+                    request.form['first_name'],
+                    request.form['last_name'],
+                    request.form['email'],
+                    request.form['password']
+                )
+                cursor.execute(sql, values)
+                connection.commit()
+        return redirect('/')
+    return render_template('users_add.html')
 
 # TODO: Add a '/dashboard' (list_users) route that uses SELECT
 
