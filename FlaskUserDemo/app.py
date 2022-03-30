@@ -8,7 +8,7 @@ app.register_blueprint(setup)
 
 @app.route('/')
 def home():
-    return "Hello World!"
+    return render_template("index.html")
 
 
 # TODO: Add a '/register' (add_user) route that uses INSERT
@@ -33,8 +33,22 @@ def add_user():
     return render_template('users_add.html')
 
 # TODO: Add a '/dashboard' (list_users) route that uses SELECT
+@app.route('/dashboard')
+def list_users():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM users")
+            result = cursor.fetchall()
+    return render_template('users_list.html', result=result)
 
 # TODO: Add a '/profile' (view_user) route that uses SELECT
+@app.route('/view')
+def view_user():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT * FROM users WHERE id=%s", request.args['id'])
+            result = cursor.fetchone()
+    return render_template('users_view.html', result=result)
 
 # TODO: Add a '/delete_user' route that uses DELETE
 
