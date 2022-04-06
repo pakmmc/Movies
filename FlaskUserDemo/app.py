@@ -64,8 +64,33 @@ def delete_user():
             connection.commit()
     return redirect('/dashboard')
 
-# TODO: Add an '/edit_user' route that uses UPDATE
-
+@app.route('/edit', methods=['GET', 'POST'])
+def edit_user():
+    if request.method == 'POST':
+        with create_connection() as connection:
+            with connection.cursor() as cursor:
+                sql = """UPDATE users SET
+                    first_name = %s,
+                    last_name = %s,
+                    email = %s,
+                    password = %s
+                    WHERE id = %s"""
+                values = (
+                    request.form['first_name'],
+                    request.form['last_name'],
+                    request.form['email'],
+                    request.form['password'],
+                    request.form['id']
+                )
+                cursor.execute(sql, values)
+                connection.commit()
+        return redirect('/view?id=' + request.form['id'])
+    else:
+        with create_connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT * FROM users WHERE id = %s", request.args['id'])
+                result = cursor.fetchone()
+        return render_template('users_edit.html', result=result)
 
 
 if __name__ == '__main__':
