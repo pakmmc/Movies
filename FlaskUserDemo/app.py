@@ -67,19 +67,31 @@ def delete_user():
 @app.route('/edit', methods=['GET', 'POST'])
 def edit_user():
     if request.method == 'POST':
+        
+        if request.files['avatar'].filename:
+            avatar_image = request.files["avatar"]
+            ext = os.path.splitext(avatar_image.filename)[1]
+            avatar_filename = str(uuid.uuid4())[:8] + ext
+            avatar_image.save("static/images/" + avatar_filename)
+            os.remove("static/images/" + request.form['old_avatar'])
+        else:
+            avatar_filename = request.form['old_avatar']
+
         with create_connection() as connection:
             with connection.cursor() as cursor:
                 sql = """UPDATE users SET
                     first_name = %s,
                     last_name = %s,
                     email = %s,
-                    password = %s
-                    WHERE id = %s"""
+                    password = %s,
+                    avatar = %s
+                WHERE id = %s"""
                 values = (
                     request.form['first_name'],
                     request.form['last_name'],
                     request.form['email'],
                     request.form['password'],
+                    avatar_filename,
                     request.form['id']
                 )
                 cursor.execute(sql, values)

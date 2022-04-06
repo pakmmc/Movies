@@ -3,8 +3,9 @@
 {% block title %}Edit profile{% endblock %}
 
 {% block content %}
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="{{ result.id }}">
+    <input type="hidden" name="old_avatar" value="{{ result.avatar }}">
     <label for="first_name">First Name:</label>
     <input id="first_name" name="first_name" value="{{ result.first_name }}">
     <br>
@@ -15,7 +16,12 @@
     <input id="email" name="email" type="email" value="{{ result.email }}">
     <br>
     <label for="password">Password:</label>
-    <input id="password" name="password" type="password"  value="{{ result.password }}">
+    <input id="password" name="password" type="password" value="{{ result.password }}">
+    <br>
+    <label for="pic">Profile picture:</label>
+    <input id="pic" type="file" name="avatar">
+    <br>
+    <img src="{{ url_for('static', filename='images/' + (result.avatar or 'default.png')) }}" height="32">
     <br>
     <input type="submit" value="Save changes">
 </form>
