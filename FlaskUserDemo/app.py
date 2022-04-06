@@ -40,7 +40,6 @@ def add_user():
         return redirect('/')
     return render_template('users_add.html')
 
-# TODO: Add a '/dashboard' (list_users) route that uses SELECT
 @app.route('/dashboard')
 def list_users():
     with create_connection() as connection:
@@ -49,7 +48,6 @@ def list_users():
             result = cursor.fetchall()
     return render_template('users_list.html', result=result)
 
-# TODO: Add a '/profile' (view_user) route that uses SELECT
 @app.route('/view')
 def view_user():
     with create_connection() as connection:
@@ -58,7 +56,13 @@ def view_user():
             result = cursor.fetchone()
     return render_template('users_view.html', result=result)
 
-# TODO: Add a '/delete_user' route that uses DELETE
+@app.route('/delete')
+def delete_user():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("DELETE FROM users WHERE id=%s", request.args['id'])
+            connection.commit()
+    return redirect('/dashboard')
 
 # TODO: Add an '/edit_user' route that uses UPDATE
 
