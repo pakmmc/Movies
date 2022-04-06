@@ -17,10 +17,13 @@ def home():
 def add_user():
     if request.method == 'POST':
 
-        avatar_image = request.files["avatar"]
-        ext = os.path.splitext(avatar_image.filename)[1]
-        avatar_filename = str(uuid.uuid4())[:8] + ext
-        avatar_image.save("static/images/" + avatar_filename)
+        if request.files['avatar'].filename:
+            avatar_image = request.files["avatar"]
+            ext = os.path.splitext(avatar_image.filename)[1]
+            avatar_filename = str(uuid.uuid4())[:8] + ext
+            avatar_image.save("static/images/" + avatar_filename)
+        else:
+            avatar_filename = None
 
         with create_connection() as connection:
             with connection.cursor() as cursor:
