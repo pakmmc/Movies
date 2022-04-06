@@ -1,3 +1,4 @@
+import uuid, os
 from flask import Flask, request, render_template, redirect
 app = Flask(__name__)
 
@@ -15,17 +16,24 @@ def home():
 @app.route('/register', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
+
+        avatar_image = request.files["avatar"]
+        ext = os.path.splitext(avatar_image.filename)[1]
+        avatar_filename = str(uuid.uuid4())[:8] + ext
+        avatar_image.save("static/images/" + avatar_filename)
+
         with create_connection() as connection:
             with connection.cursor() as cursor:
                 sql = """INSERT INTO users
-                    (first_name, last_name, email, password)
-                    VALUES (%s, %s, %s, %s)
+                    (first_name, last_name, email, password, avatar)
+                    VALUES (%s, %s, %s, %s, %s)
                 """
                 values = (
                     request.form['first_name'],
                     request.form['last_name'],
                     request.form['email'],
-                    request.form['password']
+                    request.form['password'],
+                    avatar_filename
                 )
                 cursor.execute(sql, values)
                 connection.commit()

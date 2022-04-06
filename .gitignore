@@ -7,3 +7,5 @@ obj/
 *.user
 
 .env
+FlaskUserDemo/static/images/
+!FlaskUserDemo/static/images/default.png
