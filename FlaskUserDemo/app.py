@@ -76,7 +76,8 @@ def edit_user():
             ext = os.path.splitext(avatar_image.filename)[1]
             avatar_filename = str(uuid.uuid4())[:8] + ext
             avatar_image.save("static/images/" + avatar_filename)
-            os.remove("static/images/" + request.form['old_avatar'])
+            if request.form['old_avatar'] != 'None':
+                os.remove("static/images/" + request.form['old_avatar'])
         else:
             avatar_filename = request.form['old_avatar']
 
