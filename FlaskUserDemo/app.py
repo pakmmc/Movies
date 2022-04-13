@@ -6,6 +6,16 @@ app = Flask(__name__)
 from utils import create_connection, setup
 app.register_blueprint(setup)
 
+@app.before_request
+def restrict():
+    restricted_pages = [
+        'list_users',
+        'view_user',
+        'edit_user',
+        'delete_user'
+    ]
+    if 'logged_in' not in session and request.endpoint in restricted_pages:
+        return redirect('/login')
 
 @app.route('/')
 def home():
