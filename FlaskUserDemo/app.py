@@ -133,6 +133,13 @@ def edit_user():
                 result = cursor.fetchone()
         return render_template('users_edit.html', result=result)
 
+# Example code to respond with a cookie. You don't need this code.
+from flask.helpers import make_response
+@app.route('/cookie')
+def cookie_page():
+    response = make_response('CookieName: ' + str(request.cookies.get('CookieName')))
+    response.set_cookie('CookieName', 'CookieValue')
+    return response
 
 if __name__ == '__main__':
     import os
