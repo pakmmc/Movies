@@ -1,5 +1,5 @@
 import uuid, os
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, session
 app = Flask(__name__)
 
 # Register the setup page and import create_connection()
@@ -12,7 +12,32 @@ def home():
     return render_template("index.html")
 
 
-# TODO: Add a '/register' (add_user) route that uses INSERT
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        with create_connection() as connection:
+            with connection.cursor() as cursor:
+                sql = "SELECT * FROM users WHERE email=%s AND password=%s"
+                values = (
+                    request.form['email'],
+                    request.form['password']
+                )
+                cursor.execute(sql, values)
+                result = cursor.fetchone()
+        if result:
+            session['logged_in'] = True
+            session['first_name'] = result['first_name']
+            return redirect("/dashboard")
+        else:
+            return redirect("/login")
+    else:
+        return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
 @app.route('/register', methods=['GET', 'POST'])
 def add_user():
     if request.method == 'POST':
@@ -112,7 +137,7 @@ def edit_user():
 if __name__ == '__main__':
     import os
 
-    # This is required to allow flashing messages. We will cover this later.
+    # This is required to allow sessions.
     app.secret_key = os.urandom(32)
 
     HOST = os.environ.get('SERVER_HOST', 'localhost')
