@@ -1,4 +1,4 @@
-import uuid, os
+import uuid, os, hashlib
 from flask import Flask, request, render_template, redirect, session
 app = Flask(__name__)
 
@@ -25,12 +25,16 @@ def home():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
+
+        password = request.form['password']
+        encrypted_password = hashlib.sha256(password.encode()).hexdigest()
+
         with create_connection() as connection:
             with connection.cursor() as cursor:
                 sql = "SELECT * FROM users WHERE email=%s AND password=%s"
                 values = (
                     request.form['email'],
-                    request.form['password']
+                    encrypted_password
                 )
                 cursor.execute(sql, values)
                 result = cursor.fetchone()
@@ -52,6 +56,9 @@ def logout():
 def add_user():
     if request.method == 'POST':
 
+        password = request.form['password']
+        encrypted_password = hashlib.sha256(password.encode()).hexdigest()
+
         if request.files['avatar'].filename:
             avatar_image = request.files["avatar"]
             ext = os.path.splitext(avatar_image.filename)[1]
@@ -70,7 +77,7 @@ def add_user():
                     request.form['first_name'],
                     request.form['last_name'],
                     request.form['email'],
-                    request.form['password'],
+                    encrypted_password,
                     avatar_filename
                 )
                 cursor.execute(sql, values)
@@ -122,14 +129,12 @@ def edit_user():
                     first_name = %s,
                     last_name = %s,
                     email = %s,
-                    password = %s,
                     avatar = %s
                 WHERE id = %s"""
                 values = (
                     request.form['first_name'],
                     request.form['last_name'],
                     request.form['email'],
-                    request.form['password'],
                     avatar_filename,
                     request.form['id']
                 )
