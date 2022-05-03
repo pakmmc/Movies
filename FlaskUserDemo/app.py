@@ -1,5 +1,5 @@
 import uuid, os, hashlib
-from flask import Flask, request, render_template, redirect, session
+from flask import Flask, request, render_template, redirect, session, abort, flash
 app = Flask(__name__)
 
 # Register the setup page and import create_connection()
@@ -15,6 +15,7 @@ def restrict():
         'delete_user'
     ]
     if 'logged_in' not in session and request.endpoint in restricted_pages:
+        flash("You must be logged in to view this page.")
         return redirect('/login')
 
 @app.route('/')
@@ -41,8 +42,11 @@ def login():
         if result:
             session['logged_in'] = True
             session['first_name'] = result['first_name']
+            session['role'] = result['role']
+            session['id'] = result['id']
             return redirect("/dashboard")
         else:
+            flash("Invalid username or password.")
             return redirect("/login")
     else:
         return render_template('login.html')
@@ -87,6 +91,9 @@ def add_user():
 
 @app.route('/dashboard')
 def list_users():
+    if session['role'] != 'admin':
+        flash("Only admin can access this page.")
+        return redirect('/')
     with create_connection() as connection:
         with connection.cursor() as cursor:
             cursor.execute("SELECT * FROM users")
@@ -111,8 +118,11 @@ def delete_user():
 
 @app.route('/edit', methods=['GET', 'POST'])
 def edit_user():
+    # Admin are allowed, users with the right id are allowed, everyone else sees 404.
+    if session['role'] != 'admin' and str(session['id']) != request.args['id']:
+        flash("You don't have permission to edit this user.")
+        return redirect('/view?id=' + request.args['id'])
     if request.method == 'POST':
-        
         if request.files['avatar'].filename:
             avatar_image = request.files["avatar"]
             ext = os.path.splitext(avatar_image.filename)[1]
