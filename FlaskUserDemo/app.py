@@ -122,6 +122,7 @@ def edit_user():
     if session['role'] != 'admin' and str(session['id']) != request.args['id']:
         flash("You don't have permission to edit this user.")
         return redirect('/view?id=' + request.args['id'])
+
     if request.method == 'POST':
         if request.files['avatar'].filename:
             avatar_image = request.files["avatar"]
@@ -130,8 +131,10 @@ def edit_user():
             avatar_image.save("static/images/" + avatar_filename)
             if request.form['old_avatar'] != 'None':
                 os.remove("static/images/" + request.form['old_avatar'])
-        else:
+        elif request.form['old_avatar'] != 'None':
             avatar_filename = request.form['old_avatar']
+        else:
+            avatar_filename = None
 
         with create_connection() as connection:
             with connection.cursor() as cursor:
