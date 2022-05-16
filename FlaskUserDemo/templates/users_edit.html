@@ -18,8 +18,18 @@
     <label for="pic">Profile picture:</label>
     <input id="pic" type="file" name="avatar">
     <br>
-    <img src="{{ url_for('static', filename='images/' + (result.avatar or 'default.png')) }}" height="32">
+    <img class="avatar" src="{{ url_for('static', filename='images/' + (result.avatar or 'default.png')) }}" height="32">
     <br>
     <input type="submit" value="Save changes">
 </form>
+<script>
+    let fileInput = document.querySelector("#pic");
+    let image = document.querySelector(".avatar");
+
+    fileInput.addEventListener("change", updateImage);
+
+    function updateImage() {
+        image.src = URL.createObjectURL(fileInput.files[0]);
+    }
+</script>
 {% endblock %}

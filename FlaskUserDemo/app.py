@@ -1,5 +1,5 @@
-import uuid, os, hashlib
-from flask import Flask, request, render_template, redirect, session, abort, flash
+import uuid, os, hashlib, pymysql
+from flask import Flask, request, render_template, redirect, session, abort, flash, jsonify
 app = Flask(__name__)
 
 # Register the setup page and import create_connection()
@@ -84,8 +84,12 @@ def add_user():
                     encrypted_password,
                     avatar_filename
                 )
-                cursor.execute(sql, values)
-                connection.commit()
+                try:
+                    cursor.execute(sql, values)
+                    connection.commit()
+                except pymysql.err.IntegrityError:
+                    flash('Email has already been taken')
+                    return redirect('/register')
         return redirect('/')
     return render_template('users_add.html')
 
@@ -129,7 +133,7 @@ def edit_user():
             ext = os.path.splitext(avatar_image.filename)[1]
             avatar_filename = str(uuid.uuid4())[:8] + ext
             avatar_image.save("static/images/" + avatar_filename)
-            if request.form['old_avatar'] != 'None':
+            if request.form['old_avatar'] != 'None' and os.path.exists("static/images/" + request.form['old_avatar']):
                 os.remove("static/images/" + request.form['old_avatar'])
         elif request.form['old_avatar'] != 'None':
             avatar_filename = request.form['old_avatar']
@@ -160,6 +164,23 @@ def edit_user():
                 cursor.execute("SELECT * FROM users WHERE id = %s", request.args['id'])
                 result = cursor.fetchone()
         return render_template('users_edit.html', result=result)
+
+@app.route('/checkemail')
+def check_email():
+    with create_connection() as connection:
+        with connection.cursor() as cursor:
+            sql = "SELECT * FROM users WHERE email=%s"
+            values = (
+                request.args['email']
+            )
+            cursor.execute(sql, values)
+            result = cursor.fetchone()
+    if result:
+        return jsonify({ 'status': 'Taken' })
+    else:
+        return jsonify({ 'status': 'OK' })
+
+
 
 
 if __name__ == '__main__':
